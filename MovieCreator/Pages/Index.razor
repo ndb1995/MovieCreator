@@ -1,0 +1,145 @@
+﻿@page "/"
+
+@inject MovieServices service
+
+<div class="container">
+
+    <div class="row bg-light">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Movie Id</th>
+                    <th>Name</th>
+                    <th>Rating</th>
+                    <th>Description</th>
+                    <th>Finished?</th>
+                    <th>Search Movie</th>
+                    <th>Delete Movie</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Movies.Any())
+                {
+                    @foreach (var movie in Movies)
+                    {
+                        <tr @onclick="(() => SetMovieForUpdate(movie))">
+                            <td>@movie.Id</td>
+                            <td>@movie.Name</td>
+                            <td>@movie.Rating</td>
+                            <td>@movie.Description</td>
+                            <td>@movie.isFinished</td>
+                            <td><a href="https://www.google.com/search?q=@movie.Name" target="_blank" >Search</a></td>
+                            <td><button class="btn btn-danger" @onclick="(() => DeleteMovie(movie))">Delete</button></td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6"><strong>No movies available</strong></td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row m-5">
+        <div class="col-5 bg-light m-2 justify-content-start">
+
+            <div class="p-3 mb-3 bg-primary text-white text-center">Add New Movie</div>
+
+            <EditForm Model="@NewMovie">
+                <div class="form-group">
+                    <label for="name">Movie Name</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@NewMovie.Name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="rating">Rating</label>
+                    <input type="text" id="ratng" class="form-control" @bind="@NewMovie.Rating" />
+                </div>
+
+                <div class="form-group">
+                    <label for="Description">Description</label>
+                    <input type="text" id="Description" class="form-control" @bind="@NewMovie.Description" />
+                </div>
+
+                <div class="form-group">
+                    <label for="isFinished">Finished</label>
+                    <input type="checkbox" id="Finished" class="form-control" @bind="@NewMovie.isFinished" />
+                </div>
+
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="AddNewMovie"> Add Movie</button>
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="col-5 bg-light m-2 justify-content-end">
+            <div class="p-3 mb-1 bg-primary text-white text-center">Update Movie</div>
+
+            <EditForm Model="@UpdateMovie">
+                <div class="form-group">
+                    <label for="name">Movie Name</label>
+                    <input type="text" id="name" class="form-control" @bind-value="@UpdateMovie.Name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="text" id="price" class="form-control" @bind="@UpdateMovie.Rating" />
+                </div>
+
+                <div class="form-group">
+                    <label for="Description">Description</label>
+                    <input type="text" id="Description" class="form-control" @bind="@UpdateMovie.Description" />
+                </div>
+                <div class="form-group">
+                    <label for="isFinished">Finished</label>
+                    <input type="checkbox" id="Finished" class="form-control" @bind="@UpdateMovie.isFinished" />
+                </div>
+
+                <div class="text-center p-3 mb-3">
+                    <button class="btn btn-info" @onclick="UpdateMovieData"> Update Movie</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    List<Movie> Movies = new List<Movie>();
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshMovies();
+    }
+
+    private async Task RefreshMovies()
+    {
+        Movies = await service.GetMovieAsync();
+    }
+
+    public Movie NewMovie { get; set; } = new Movie();
+    private async Task AddNewMovie()
+    {
+        await service.AddMovieAsync(NewMovie);
+        NewMovie = new Movie();
+        await RefreshMovies();
+    }
+
+    Movie UpdateMovie = new Movie();
+    private void SetMovieForUpdate(Movie movie)
+    {
+        UpdateMovie = movie;
+    }
+
+    private async Task UpdateMovieData()
+    {
+        await service.UpdateMovieAsync(UpdateMovie);
+        await RefreshMovies();
+    }
+
+    private async Task DeleteMovie(Movie movie)
+    {
+        await service.DeleteMovieAsync(movie);
+        await RefreshMovies();
+    } 
+}
